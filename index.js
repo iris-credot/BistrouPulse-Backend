@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(cookieParser());
 
  app.use(cors({
-    origin: ["http://localhost:3000","http://localhost:5174","https://bistro-pulse-front-end.vercel.app/"],
+    origin: ["http://localhost:3000","http://localhost:5174","https://bistro-pulse-front-end-k4d8.vercel.app/"],
      credentials: true,
      allowedHeaders: ['Content-Type', 'Authorization'],
      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
