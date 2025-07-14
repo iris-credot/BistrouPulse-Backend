@@ -4,7 +4,7 @@ const clientRouter = express.Router();
 const auth = require('../Middleware/authentication');
 
 // Get all clients
-clientRouter.get('/',clientController.getAllClients);
+clientRouter.get('/', auth.ownerJWT,clientController.getAllClients);
 
 // Get client by ID
 clientRouter.get('/:id',auth.ownerJWT, clientController.getClientById);
@@ -13,7 +13,7 @@ clientRouter.get('/:id',auth.ownerJWT, clientController.getClientById);
 clientRouter.get('/user/:userId', auth.ownerJWT,clientController.getClientByUserId);
 
 // Create a new client
-clientRouter.post('/',auth.ownerJWT, clientController.createClient);
+clientRouter.post('/', clientController.createClient);
 
 // Update client by ID
 clientRouter.put('/:id',auth.ownerJWT, clientController.updateClient);
