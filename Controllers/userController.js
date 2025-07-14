@@ -96,7 +96,7 @@ const userController ={
 
   try {
     // Send OTP email
-    await sendEmail(normalizedEmail, 'Bistrou-Pulse System: Verify your account', emailBody);
+    await sendEmail(emaill, 'Bistrou-Pulse System: Verify your account', emailBody);
     console.log('Verification email sent successfully');
   } catch (emailError) {
     console.error('Failed to send verification email:', emailError.message);
