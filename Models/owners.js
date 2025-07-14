@@ -3,21 +3,7 @@ const mongoose = require('mongoose');
 const ownerSchema = new mongoose.Schema({
   user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Link to User model
 
-  fullName: {
-    type: String,
-    required: true,
-  },
 
-  contactNumber: {
-    type: String,
-    required: true,
-  },
-
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
 
   restaurants: [
     {
@@ -30,22 +16,10 @@ const ownerSchema = new mongoose.Schema({
     type: String,
   },
 
-  address: {
-    street: String,
-    city: String,
-    state: String,
-    country: String,
-    zipCode: String,
-  },
+  
 
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
 
-  licenseNumber: {
-    type: String,
-  }
+  
 
 }, { timestamps: true });
 

@@ -79,10 +79,33 @@ const userController ={
   });
 
   const savedUser = await newUser.save();
-  const body = `Your OTP is ${otp}`;
-  await sendEmail(email, "Bistrou-Pulse System: Verify your account", body);
+ 
+  // Prepare email body
+  const emailBody = `
+    Welcome to Bistrou-Pulse!
 
-  res.status(200).json({ user: savedUser, otp: otp });
+    Your One Time Password (OTP) for account verification is: ${otp}
+
+    This OTP is valid for 5 minutes.
+
+    If you did not request this, please ignore this email.
+
+    Best regards,
+    Bistrou-Pulse Team
+  `;
+
+  try {
+    // Send OTP email
+    await sendEmail(normalizedEmail, 'Bistrou-Pulse System: Verify your account', emailBody);
+    console.log('Verification email sent successfully');
+  } catch (emailError) {
+    console.error('Failed to send verification email:', emailError.message);
+    // You might want to continue or fail here based on your app needs
+    // For example, you can return an error or just log it
+  }
+
+  res.status(201).json({ user: savedUser, message: 'User created successfully, OTP sent to email' });
+
 }),
 
       getUserById: asyncWrapper(async (req, res, next) => {

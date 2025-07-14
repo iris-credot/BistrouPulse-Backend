@@ -25,9 +25,11 @@ const menuItemSchema = new mongoose.Schema({
     type: String, // Cloudinary URL or image path
   },
 
-  category: {
-    type: String, // e.g. "Appetizer", "Main Course", "Dessert", "Drinks"
-  },
+ category: {
+  type: String,
+  enum: ["Appetizer", "Main Course", "Dessert", "Drinks"],
+  required: true
+},
 
   isAvailable: {
     type: Boolean,
