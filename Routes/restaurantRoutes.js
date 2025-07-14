@@ -5,25 +5,25 @@ const auth = require('../Middleware/authentication'); // if you have auth middle
 const restaurantRouter = express.Router();
 
 // Get all restaurants
-restaurantRouter .get('/', restaurantController.getAllRestaurants);
+restaurantRouter .get('/',auth.AuthJWT, restaurantController.getAllRestaurants);
 
 // Get a restaurant by ID
-restaurantRouter .get('/:id', restaurantController.getRestaurantById);
+restaurantRouter .get('/:id',auth.AuthJWT, restaurantController.getRestaurantById);
 
 // Get all restaurants for a specific owner
-restaurantRouter .get('/owner/:ownerId', restaurantController.getRestaurantsByOwner);
+restaurantRouter .get('/owner/:ownerId', auth.adminJWT,restaurantController.getRestaurantsByOwner);
 
 // Create a new restaurant
 // Add authentication if needed, e.g., auth.AuthJWT
-restaurantRouter .post('/', /* auth.AuthJWT, */ restaurantController.createRestaurant);
+restaurantRouter .post('/', auth.BothJWT,restaurantController.createRestaurant);
 
 // Update a restaurant by ID
-restaurantRouter .put('/:id', /* auth.AuthJWT, */ restaurantController.updateRestaurant);
+restaurantRouter .put('/:id', auth.BothJWT, restaurantController.updateRestaurant);
 
 // Delete a restaurant by ID
-restaurantRouter .delete('/:id', /* auth.AuthJWT, */ restaurantController.deleteRestaurant);
+restaurantRouter .delete('/:id', auth.BothJWT, restaurantController.deleteRestaurant);
 
 // Toggle restaurant active status
-restaurantRouter .patch('/:id/toggle-status', /* auth.AuthJWT, */ restaurantController.toggleRestaurantStatus);
+restaurantRouter .patch('/:id/toggle-status', auth.AuthJWT, restaurantController.toggleRestaurantStatus);
 
 module.exports = restaurantRouter ;

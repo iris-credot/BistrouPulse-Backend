@@ -1,29 +1,30 @@
 const express = require('express');
 const menuItemController = require('../Controllers/menuController');
 const menuRouter = express.Router();
+const auth = require('../Middleware/authentication');
 
 // Get all menu items
-menuRouter.get('/', menuItemController.getAllMenuItems);
+menuRouter.get('/',auth.AuthJWT, menuItemController.getAllMenuItems);
 
 // Get menu item by ID
-menuRouter.get('/:id', menuItemController.getMenuItemById);
+menuRouter.get('/:id',auth.AuthJWT, menuItemController.getMenuItemById);
 
 // Get menu items by restaurant ID
-menuRouter.get('/restaurant/:restaurantId', menuItemController.getMenuItemsByRestaurant);
+menuRouter.get('/restaurant/:restaurantId',auth.AuthJWT, menuItemController.getMenuItemsByRestaurant);
 
 // Get menu items by category
-menuRouter.get('/category/:category', menuItemController.getMenuItemsByCategory);
+menuRouter.get('/category/:category',auth.AuthJWT, menuItemController.getMenuItemsByCategory);
 
 // Create new menu item
-menuRouter.post('/', menuItemController.createMenuItem);
+menuRouter.post('/',auth.ownerJWT, menuItemController.createMenuItem);
 
 // Update menu item by ID
-menuRouter.put('/:id', menuItemController.updateMenuItem);
+menuRouter.put('/:id',auth.ownerJWT, menuItemController.updateMenuItem);
 
 // Delete menu item by ID
-menuRouter.delete('/:id', menuItemController.deleteMenuItem);
+menuRouter.delete('/:id',auth.ownerJWT, menuItemController.deleteMenuItem);
 
 // Toggle availability status by ID
-menuRouter.patch('/:id/toggle-availability', menuItemController.toggleAvailability);
+menuRouter.patch('/:id/toggle-availability',auth.AuthJWT, menuItemController.toggleAvailability);
 
 module.exports = menuRouter;

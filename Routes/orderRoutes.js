@@ -5,27 +5,27 @@ const auth = require('../Middleware/authentication'); // Adjust if you have auth
 const orderRouter = express.Router();
 
 // Get all orders
-orderRouter.get('/', orderController.getAllOrders);
+orderRouter.get('/',auth.ownerJWT, orderController.getAllOrders);
 
 // Get order by ID
-orderRouter.get('/:id', orderController.getOrderById);
+orderRouter.get('/:id',auth.AuthJWT, orderController.getOrderById);
 
 // Get orders by user ID
-orderRouter.get('/user/:userId', orderController.getOrdersByUserId);
+orderRouter.get('/user/:userId', auth.ownerJWT,orderController.getOrdersByUserId);
 
 // Create new order
-orderRouter.post('/', orderController.createOrder);
+orderRouter.post('/', auth.AuthJWT,orderController.createOrder);
 
 // Update order by ID
-orderRouter.put('/:id', orderController.updateOrder);
+orderRouter.put('/:id',auth.AuthJWT, orderController.updateOrder);
 
 // Delete order by ID
-orderRouter.delete('/:id', orderController.deleteOrder);
+orderRouter.delete('/:id',auth.AuthJWT, orderController.deleteOrder);
 
 // Mark order as paid
-orderRouter.patch('/:id/pay', orderController.markAsPaid);
+orderRouter.patch('/:id/pay',auth.ownerJWT, orderController.markAsPaid);
 
 // Mark order as delivered
-orderRouter.patch('/:id/deliver', orderController.markAsDelivered);
+orderRouter.patch('/:id/deliver',auth.ownerJWT, orderController.markAsDelivered);
 
 module.exports = orderRouter;

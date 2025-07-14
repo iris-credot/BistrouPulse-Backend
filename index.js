@@ -2,7 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
  const cors = require('cors');
-
+ const swaggerUi = require('swagger-ui-express');
+const swagger = require('./swagger.json');
 const dotenv= require('dotenv');
 dotenv.config();
 const connection = process.env.MONGODB_URI ;
@@ -14,7 +15,7 @@ const AllRoutes = require('./Routes/app');
 
 app.use(express.json());
 app.use(cookieParser());
-
+app.use('/bistrouSwagger', swaggerUi.serve, swaggerUi.setup(swagger))
  app.use(cors({
     origin: ["http://localhost:3000","http://localhost:5174","https://bistro-pulse-front-end-k4d8.vercel.app"],
      credentials: true,

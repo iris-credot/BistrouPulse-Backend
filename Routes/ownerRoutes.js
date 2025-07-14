@@ -5,25 +5,25 @@ const auth = require('../Middleware/authentication'); // adjust based on your au
 const ownerRouter = express.Router();
 
 // Get all owners
-ownerRouter.get('/', ownerController.getAllOwners);
+ownerRouter.get('/', auth.adminJWT,ownerController.getAllOwners);
 
 // Get owner by ID
-ownerRouter.get('/:id', ownerController.getOwnerById);
+ownerRouter.get('/:id', auth.BothJWT,ownerController.getOwnerById);
 
 // Get owner profile of logged-in user
 // Assumes auth middleware sets req.user
-ownerRouter.get('/me/profile', auth.AuthJWT, ownerController.getMyOwnerProfile);
+ownerRouter.get('/me/profile', auth.BothJWT, ownerController.getMyOwnerProfile);
 
 // Get owner by userId param
-ownerRouter.get('/user/:userId', ownerController.getOwnerByUserId);
+ownerRouter.get('/user/:userId',auth.BothJWT, ownerController.getOwnerByUserId);
 
 // Create owner profile
-ownerRouter.post('/', ownerController.createOwner);
+ownerRouter.post('/',auth.adminJWT, ownerController.createOwner);
 
 // Update owner by ID
-ownerRouter.put('/:id', ownerController.updateOwner);
+ownerRouter.put('/:id',auth.BothJWT, ownerController.updateOwner);
 
 // Delete owner by ID
-ownerRouter.delete('/:id', ownerController.deleteOwner);
+ownerRouter.delete('/:id',auth.adminJWT, ownerController.deleteOwner);
 
 module.exports =ownerRouter;
