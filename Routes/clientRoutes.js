@@ -4,7 +4,7 @@ const clientRouter = express.Router();
 const auth = require('../Middleware/authentication');
 
 // Get all clients
-clientRouter.get('/', auth.ownerJWT,clientController.getAllClients);
+clientRouter.get('/', auth.AuthJWT,clientController.getAllClients);
 
 // Get client by ID
 clientRouter.get('/:id',auth.ownerJWT, clientController.getClientById);
