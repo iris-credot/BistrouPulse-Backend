@@ -79,6 +79,7 @@ createOwner: asyncWrapper(async (req, res, next) => {
     return next(new BadRequest(error.message));
   }
    user.role = 'owner';
+   user.verified = true;
   await user.save();
 
   // 5. Send a welcome email using the RELIABLE email from the user object
