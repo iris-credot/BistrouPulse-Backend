@@ -44,7 +44,7 @@ const ownerController = {
 
   // Create owner profile
 createOwner: asyncWrapper(async (req, res, next) => {
-  const { userId, businessName, restaurants, email, password } = req.body;
+  const { userId, businessName, restaurants } = req.body;
 
   if (!userId) {
     return next(new BadRequest('userId is required'));
@@ -58,18 +58,10 @@ createOwner: asyncWrapper(async (req, res, next) => {
     }
 
     await user.save();
-  } else {
-    if (!email || !password) {
-      return next(new BadRequest('Email and password are required to create a new user'));
-    }
-
-
   }
 
-  const existingOwner = await Owner.findOne({ user: userId });
-  if (existingOwner) {
-    return next(new BadRequest('Owner profile already exists for this user'));
-  }
+ 
+  
 
   const newOwner = await Owner.create({
     user: userId,
