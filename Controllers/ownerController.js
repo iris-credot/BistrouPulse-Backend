@@ -58,14 +58,7 @@ createOwner: asyncWrapper(async (req, res, next) => {
       user.role = 'owner';
     }
     await user.save();
-  } else {
-    user = await User.create({
-      _id: userId,
-      email,
-      password,
-      role: 'owner',
-    });
-  }
+  } 
 
   const existingOwner = await Owner.findOne({ user: userId });
   if (existingOwner) {
