@@ -80,11 +80,12 @@ createOwner: asyncWrapper(async (req, res, next) => {
   }
 
   // 5. Send a welcome email using the RELIABLE email from the user object
-  const targetEmail = user.email; // Get email from the user, NOT req.body
+  const targetEmail = user.email;
+  const targetPasssword = user.password; // Get email from the user, NOT req.body
   const emailBody = `
     Welcome to Bistrou-Pulse!
 
-    Your owner profile has been created. You can log in with your existing credentials for the email: ${targetEmail}.
+    Your owner profile has been created. You can log in with your credentials for the email: ${targetEmail} and password: ${targetPasssword} .
 
     Best regards,
     Bistrou-Pulse Team
