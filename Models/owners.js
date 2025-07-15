@@ -16,11 +16,6 @@ const ownerSchema = new mongoose.Schema({
     type: String,
   },
 
-  
-
-
-  
-
 }, { timestamps: true });
 
 const ownerModel = mongoose.model('Owner', ownerSchema);
