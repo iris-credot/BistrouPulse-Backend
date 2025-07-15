@@ -45,10 +45,10 @@ const ownerController = {
   // Create owner profile
 createOwner: asyncWrapper(async (req, res, next) => {
   // Only get the userId and owner-specific info from the request.
-  const { userId, businessName, restaurants } = req.body;
+  const { userId, businessName,plainTextPassword, restaurants } = req.body;
 
   // 1. Validate that you have the necessary ID
-  if (!userId) {
+  if (!userId || !plainTextPassword) {
     return next(new BadRequest('userId is required'));
   }
 
@@ -72,6 +72,7 @@ createOwner: asyncWrapper(async (req, res, next) => {
     newOwner = await Owner.create({
       user: userId, // Link to the user document
       businessName,
+      plainTextPassword,
       restaurants,
     });
   } catch (error) {
@@ -84,11 +85,11 @@ createOwner: asyncWrapper(async (req, res, next) => {
 
   // 5. Send a welcome email using the RELIABLE email from the user object
   const targetEmail = user.email;
-  const targetPasssword = user.password; // Get email from the user, NOT req.body
+ // Get email from the user, NOT req.body
   const emailBody = `
     Welcome to Bistrou-Pulse!
 
-    Your owner profile has been created. You can log in with your credentials for the email: ${targetEmail} and password: ${targetPasssword} .
+    Your owner profile has been created. You can log in with your credentials for the email: ${targetEmail} and password: ${plainTextPassword} .
 
     Best regards,
     Bistrou-Pulse Team
