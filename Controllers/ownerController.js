@@ -44,68 +44,59 @@ const ownerController = {
 
   // Create owner profile
 createOwner: asyncWrapper(async (req, res, next) => {
+  // Only get the userId and owner-specific info from the request.
   const { userId, businessName, restaurants } = req.body;
 
+  // 1. Validate that you have the necessary ID
   if (!userId) {
     return next(new BadRequest('userId is required'));
   }
 
-  // 1. Find the user
+  // 2. Find the user. This is the source of truth for email.
   const user = await User.findById(userId);
   if (!user) {
     return next(new BadRequest('User not found'));
   }
 
-  // 2. Check if owner already exists
+  // 3. Check if an owner profile already exists for this user.
+  // This query is now on the `user` field in the owner schema.
   const existingOwner = await Owner.findOne({ user: userId });
   if (existingOwner) {
     return next(new BadRequest('Owner profile already exists for this user'));
   }
 
-  // 3. Update user role to owner if not already
- await User.findByIdAndUpdate(userId, { role: 'owner' });
-
-
-  // 4. Create the new owner
+  // 4. Create the new owner profile.
+  // Notice we are NOT passing email or password. They don't exist in the schema anymore.
   let newOwner;
   try {
     newOwner = await Owner.create({
-      user: userId,
+      user: userId, // Link to the user document
       businessName,
       restaurants,
     });
   } catch (error) {
-    if (error.code === 11000) {
-      return next(new BadRequest(`Duplicate key error: ${JSON.stringify(error.keyValue)}`));
-    }
+    // This will now catch other potential errors, like if the userId is invalid
     return next(new BadRequest(error.message));
   }
 
-  // 5. Send welcome email
-  const targetEmail = user.email;
-
+  // 5. Send a welcome email using the RELIABLE email from the user object
+  const targetEmail = user.email; // Get email from the user, NOT req.body
   const emailBody = `
     Welcome to Bistrou-Pulse!
 
-    Your account has been created with the following credentials:
-
-    Email: ${targetEmail}
-    Password: ${'your chosen password'}
-
-    Please change your password after logging in.
+    Your owner profile has been created. You can log in with your existing credentials for the email: ${targetEmail}.
 
     Best regards,
     Bistrou-Pulse Team
   `;
 
   try {
-    await sendEmail(targetEmail, "Bistrou-Pulse System: Your Account Credentials", emailBody);
+    await sendEmail(targetEmail, "Bistrou-Pulse System: Your Owner Profile is Ready", emailBody);
   } catch (error) {
     console.error("Failed to send email:", error.message);
-    // Email failed but still continue
   }
 
-  // 6. Send response
+  // 6. Send the successful response
   res.status(201).json({
     message: 'Owner created successfully and email sent',
     owner: newOwner

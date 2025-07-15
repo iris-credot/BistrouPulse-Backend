@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const ownerSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Link to User model
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true ,  unique: true}, // Link to User model
 
 
 

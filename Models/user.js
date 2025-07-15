@@ -38,6 +38,7 @@ lastName: {
       required: [true, 'Please provide email'],
       unique: true,
       lowercase: true,
+      
       validate: {
           validator: function(value) {
               return /\S+@\S+\.\S+/.test(value); // Regular expression for email validation
