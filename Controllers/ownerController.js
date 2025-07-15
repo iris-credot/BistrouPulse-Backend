@@ -44,10 +44,10 @@ const ownerController = {
 
   // Create owner profile
 createOwner: asyncWrapper(async (req, res, next) => {
-  const { userId, email, password, businessName, restaurants } = req.body;
+  const { userId,  businessName, restaurants } = req.body;
 
-  if (!userId || !email || !password) {
-    return next(new BadRequest('userId, email and password are required'));
+  if (!userId ) {
+    return next(new BadRequest('userId are required'));
   }
 
   let user = await User.findById(userId);
