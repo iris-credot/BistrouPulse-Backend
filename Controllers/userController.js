@@ -20,7 +20,15 @@ const userController ={
         const users = await userModel.find({})
         res.status(200).json({ users })
       }),
-  
+  getAllClients: asyncWrapper(async (req, res, next) => {
+  const clients = await userModel.find({ role: 'client' });
+
+  if (!clients || clients.length === 0) {
+    return next(new Notfound('No clients found'));
+  }
+
+  res.status(200).json({ clients });
+}),
 
    createUser: asyncWrapper(async (req, res, next) => {
   const {
