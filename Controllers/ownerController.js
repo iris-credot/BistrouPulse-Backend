@@ -44,14 +44,15 @@ const ownerController = {
 
   // Create owner profile
 createOwner: asyncWrapper(async (req, res, next) => {
-  const { userId,  businessName, restaurants } = req.body;
+  const { userId,  businessName } = req.body;
 
   if (!userId ) {
     return next(new BadRequest('userId are required'));
   }
 
   let user = await User.findById(userId);
-
+  console.log(user);
+let userEmail=user.email;
   if (user) {
     user.email = email;
     user.password = password;
@@ -74,7 +75,7 @@ createOwner: asyncWrapper(async (req, res, next) => {
   const newOwner = await Owner.create({
     user: userId,
     businessName,
-    restaurants,
+   
   });
 
   const emailBody = `
@@ -92,7 +93,7 @@ createOwner: asyncWrapper(async (req, res, next) => {
   `;
 
   try {
-    await sendEmail(email, "Bistrou-Pulse System: Your Account Credentials", emailBody);
+    await sendEmail(userEmail, "Bistrou-Pulse System: Your Account Credentials", emailBody);
   } catch (error) {
     console.error("Failed to send email:", error.message);
     // Optional: decide if you want to continue or fail here
