@@ -110,15 +110,35 @@ createOwner: asyncWrapper(async (req, res, next) => {
 
 
   // Update owner profile
-  updateOwner: asyncWrapper(async (req, res, next) => {
+ updateOwner: asyncWrapper(async (req, res, next) => {
     const { id } = req.params;
-    const updatedOwner = await Owner.findByIdAndUpdate(id, req.body, {
-      new: true,
-    }).populate('user').populate('restaurants');
+    
+    // 1. Separate the user data from the owner data
+    const { user: userData, businessName } = req.body;
 
-    if (!updatedOwner) {
+    // 2. Find the owner first to get their associated user ID
+    const owner = await Owner.findById(id);
+    if (!owner) {
       return next(new NotFound('Owner not found'));
     }
+
+    // 3. Update the Owner model with owner-specific fields
+    owner.businessName = businessName;
+    await owner.save();
+
+    // 4. Update the associated User model with user-specific fields
+    if (userData && owner.user) {
+        await User.findByIdAndUpdate(owner.user, {
+            // Use the data from the nested 'user' object in the request
+            names: userData.names,
+            email: userData.email,
+            phoneNumber: userData.phoneNumber,
+            address: userData.address,
+        }, { new: true, runValidators: true }); // 'runValidators' ensures your model rules are checked
+    }
+    
+    // 5. Fetch the fully updated owner with the populated user to send back
+    const updatedOwner = await Owner.findById(id).populate('user');
 
     res.status(200).json({ message: 'Owner updated successfully', owner: updatedOwner });
   }),
