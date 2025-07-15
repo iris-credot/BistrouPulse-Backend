@@ -62,8 +62,6 @@ createOwner: asyncWrapper(async (req, res, next) => {
   } else {
     user = await User.create({
       _id: userId,
-      email,
-      password,
       role: 'owner',
     });
   }
