@@ -53,8 +53,7 @@ createOwner: asyncWrapper(async (req, res, next) => {
   let user = await User.findById(userId);
 
   if (user) {
-    user.email = email;
-    user.password = password;
+  
     if (user.role !== 'owner') {
       user.role = 'owner';
     }
