@@ -78,6 +78,8 @@ createOwner: asyncWrapper(async (req, res, next) => {
     // This will now catch other potential errors, like if the userId is invalid
     return next(new BadRequest(error.message));
   }
+   user.role = 'owner';
+  await user.save();
 
   // 5. Send a welcome email using the RELIABLE email from the user object
   const targetEmail = user.email;
