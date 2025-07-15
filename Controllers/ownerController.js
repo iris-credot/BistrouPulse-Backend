@@ -50,26 +50,38 @@ createOwner: asyncWrapper(async (req, res, next) => {
     return next(new BadRequest('userId is required'));
   }
 
-  let user = await User.findById(userId);
-
-  if (user) {
-    if (user.role !== 'owner') {
-      user.role = 'owner';
-    }
-
-    await user.save();
+  // 1. Find the user
+  const user = await User.findById(userId);
+  if (!user) {
+    return next(new BadRequest('User not found'));
   }
 
- 
-  
+  // 2. Check if owner already exists
+  const existingOwner = await Owner.findOne({ user: userId });
+  if (existingOwner) {
+    return next(new BadRequest('Owner profile already exists for this user'));
+  }
 
-  const newOwner = await Owner.create({
-    user: userId,
-    businessName,
-    restaurants,
-  });
+  // 3. Update user role to owner if not already
+ await User.findByIdAndUpdate(userId, { role: 'owner' });
 
-  // Send email to the correct email address
+
+  // 4. Create the new owner
+  let newOwner;
+  try {
+    newOwner = await Owner.create({
+      user: userId,
+      businessName,
+      restaurants,
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      return next(new BadRequest(`Duplicate key error: ${JSON.stringify(error.keyValue)}`));
+    }
+    return next(new BadRequest(error.message));
+  }
+
+  // 5. Send welcome email
   const targetEmail = user.email;
 
   const emailBody = `
@@ -78,7 +90,7 @@ createOwner: asyncWrapper(async (req, res, next) => {
     Your account has been created with the following credentials:
 
     Email: ${targetEmail}
-    Password: ${password || 'your chosen password'}
+    Password: ${'your chosen password'}
 
     Please change your password after logging in.
 
@@ -90,14 +102,16 @@ createOwner: asyncWrapper(async (req, res, next) => {
     await sendEmail(targetEmail, "Bistrou-Pulse System: Your Account Credentials", emailBody);
   } catch (error) {
     console.error("Failed to send email:", error.message);
-    // Optional: log error or continue depending on your needs
+    // Email failed but still continue
   }
 
+  // 6. Send response
   res.status(201).json({
     message: 'Owner created successfully and email sent',
     owner: newOwner
   });
 }),
+
 
   // Update owner profile
   updateOwner: asyncWrapper(async (req, res, next) => {
