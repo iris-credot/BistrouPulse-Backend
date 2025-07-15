@@ -44,34 +44,27 @@ const ownerController = {
 
   // Create owner profile
 createOwner: asyncWrapper(async (req, res, next) => {
-  const { userId, email, password, businessName, restaurants } = req.body;
+  const { userId, businessName, restaurants, email, password } = req.body;
 
-  if (!userId || !email || !password) {
-    return next(new BadRequest('userId, email and password are required'));
+  if (!userId) {
+    return next(new BadRequest('userId is required'));
   }
 
   let user = await User.findById(userId);
 
   if (user) {
-  
     if (user.role !== 'owner') {
       user.role = 'owner';
     }
+
     await user.save();
   } else {
-  const existingUserByEmail = await User.findOne({ email });
-  if (existingUserByEmail) {
-    return next(new BadRequest('Duplicate value entered for email field, please choose another value'));
+    if (!email || !password) {
+      return next(new BadRequest('Email and password are required to create a new user'));
+    }
+
+
   }
-
-  user = await User.create({
-    _id: userId,
-    email,
-    password,
-    role: 'owner',
-  });
-}
-
 
   const existingOwner = await Owner.findOne({ user: userId });
   if (existingOwner) {
@@ -84,13 +77,16 @@ createOwner: asyncWrapper(async (req, res, next) => {
     restaurants,
   });
 
+  // Send email to the correct email address
+  const targetEmail = user.email;
+
   const emailBody = `
     Welcome to Bistrou-Pulse!
 
     Your account has been created with the following credentials:
 
-    Email: ${email}
-    Password: ${password}
+    Email: ${targetEmail}
+    Password: ${password || 'your chosen password'}
 
     Please change your password after logging in.
 
@@ -99,13 +95,16 @@ createOwner: asyncWrapper(async (req, res, next) => {
   `;
 
   try {
-    await sendEmail(email, "Bistrou-Pulse System: Your Account Credentials", emailBody);
+    await sendEmail(targetEmail, "Bistrou-Pulse System: Your Account Credentials", emailBody);
   } catch (error) {
     console.error("Failed to send email:", error.message);
-    // Optional: decide if you want to continue or fail here
+    // Optional: log error or continue depending on your needs
   }
 
-  res.status(201).json({ message: 'Owner created successfully and email sent', owner: newOwner });
+  res.status(201).json({
+    message: 'Owner created successfully and email sent',
+    owner: newOwner
+  });
 }),
 
   // Update owner profile
