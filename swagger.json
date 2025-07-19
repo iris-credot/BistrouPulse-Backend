@@ -1184,7 +1184,72 @@
         }
       }
     }
-  }
+  },
+   "/notification/getall": {
+                "get": {
+                  "tags": ["Notification"],
+                  "summary": "Get all notifications (Admin only)",
+                  "security": [
+                    {
+                      "Bearer": []
+                    }
+                  ],
+                  "responses": {
+                    "200": {
+                      "description": "List of all notifications",
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/Notification"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "403": { "description": "Unauthorized" }
+                  }
+                }
+              },
+              "/notification/get/{id}": {
+                "get": {
+                  "tags": ["Notification"],
+                  "summary": "Get notifications for a specific user",
+                  "security": [
+                    {
+                      "Bearer": []
+                    }
+                  ],
+                  "parameters": [
+                    {
+                      "name": "id",
+                      "in": "path",
+                      "required": true,
+                      "schema": {
+                        "type": "string"
+                      },
+                      "description": "User ID"
+                    }
+                  ],
+                  "responses": {
+                    "200": {
+                      "description": "Notifications for the user",
+                      "content": {
+                        "application/json": {
+                          "schema": {
+                            "type": "array",
+                            "items": {
+                              "$ref": "#/definitions/Notification"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "404": { "description": "User not found or no notifications" }
+                  }
+                }
+              }
 },
    "definitions": {
   "User": {
@@ -1454,7 +1519,44 @@
         "default": true
       }
     }
-  }
+  },
+   "Notification": {
+              "type": "object",
+              "properties": {
+                "_id": {
+                  "type": "string",
+                  "description": "MongoDB ObjectId of the notification"
+                },
+                "user_id": {
+                  "type": "string",
+                  "description": "Reference to User ID who receives notification"
+                },
+                "message": {
+                  "type": "string",
+                  "description": "Notification message content"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": ["pending", "sent", "failed"],
+                  "default": "pending"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["Notification", "complaint", "response", "category"],
+                  "default": "Notification",
+                  "description": "Type/category of notification"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": ["user_id", "message", "type"]
+            }
 }
   }
       
