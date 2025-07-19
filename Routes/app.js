@@ -4,6 +4,7 @@ const menuRoutes = require('./menuRoutes.js');
 const orderRoutes = require('./orderRoutes.js');
 const ownerRoutes = require('./ownerRoutes.js');
 const restaurantRoutes = require('./restaurantRoutes.js');
+const NotificationRoute =require('./notificationRoute.js');
 const express = require('express');
 
 const Router= express.Router();
@@ -14,6 +15,7 @@ Router.use('/menu',menuRoutes);
 Router.use('/order',orderRoutes);
 Router.use('/owner',ownerRoutes);
 Router.use('/restaurant',restaurantRoutes);
+Router.use('/notify',NotificationRoute);
 
 
 

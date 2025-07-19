@@ -2,6 +2,12 @@ const asyncWrapper = require('../Middleware/async');
 const MenuItem = require('../Models/menu');
 const NotFound = require('../Error/NotFound');
 const BadRequest = require('../Error/BadRequest');
+const cloudinary =require('cloudinary');
+cloudinary.v2.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET
+  });
 
 const menuItemController = {
   // Get all menu items
@@ -47,25 +53,35 @@ const menuItemController = {
   createMenuItem: asyncWrapper(async (req, res, next) => {
     const { restaurant, name, description, price, image, category, isAvailable } = req.body;
 
-    if (!restaurant || !name || !price || !category) {
-      return next(new BadRequest('Required fields: restaurant, name, price, category'));
+    if (!restaurant || !name || !price || !image) {
+      return next(new BadRequest('Required fields: restaurant, name, price, image'));
     }
 
     if (!["Appetizer", "Main Course", "Dessert", "Drinks"].includes(category)) {
       return next(new BadRequest('Invalid category'));
     }
-
-    const newMenuItem = await MenuItem.create({
+const images = `IMAGE_${Date.now()}`;
+try{
+   const ImageCloudinary = await cloudinary.v2.uploader.upload(req.file.path, {
+              folder: 'Bistrou-Pulse',
+              public_id: images
+            });
+ const newMenuItem = await MenuItem.create({
       restaurant,
       name,
       description,
       price,
-      image,
+      image:ImageCloudinary.secure_url,
       category,
       isAvailable,
     });
 
     res.status(201).json({ message: 'Menu item created successfully', menuItem: newMenuItem });
+}
+     catch (err) {
+          console.error('Error uploading image to Cloudinary:', err);
+          return next(new BadRequest('Error uploading image to Cloudinary.'));
+        }
   }),
 
   // Update menu item by ID
