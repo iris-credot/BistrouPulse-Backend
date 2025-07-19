@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const restaurantSchema = new mongoose.Schema({
+   user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Owner',

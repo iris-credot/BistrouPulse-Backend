@@ -3,52 +3,35 @@ const asyncWrapper = require('../Middleware/async');
 const BadRequest = require('../Error/BadRequest');
 const NotFound = require('../Error/NotFound');
 const User = require('../Models/user'); // Assuming user has an email field
-const sendEmail = require('../Middleware/sendMail'); // A utility to send email
-const sendNotification = async ({ user, message, type }) => {
+ // A utility to send email
+
+const createNotification = async ({ user, message, type }) => {
   if (!user || !message) {
-    console.warn('Notification skipped: user or message missing.', { user, message });
-    return; // Exit silently
-  }
-
-  let userData = null;
-
-  // Try to find by _id
-  if (typeof user === 'string' || typeof user === 'object') {
-    try {
-      userData = await User.findById(user);
-    } catch (err) {
-      console.warn('Invalid ObjectId format for user:', user);
-    }
-  }
-
- 
-
-  // If still not found, skip notification
-  if (!userData || !userData.email) {
-    console.warn('Notification skipped: user or email not found.', { input: user });
+    console.warn('Notification skipped: User ID or message is missing.');
     return;
   }
 
-  const notification = new Notification({
-    user: userData._id,
-    message,
-    type,
-  });
-
   try {
-    await sendEmail(
-      userData.email,
-      `New ${type} notification`,
-      `<p>${message}</p>`
-    );
-   
-  } catch (error) {
-    
-    console.error('Email sending failed:', error);
-  }
+    // Ensure the user exists before creating a notification
+    const userExists = await User.findById(user);
+    if (!userExists) {
+      console.warn(`Notification skipped: User with ID "${user}" not found.`);
+      return;
+    }
 
-  await notification.save();
-  return notification;
+    const newNotification = new Notification({
+      user: userExists._id,
+      message,
+      type,
+    });
+
+    await newNotification.save();
+    return newNotification; // Return the created notification
+  } catch (error) {
+    console.error('Failed to create notification:', error);
+    // Decide if you want to throw the error or just log it
+    // For non-critical notifications, just logging is often sufficient
+  }
 };
 
 
@@ -70,6 +53,27 @@ const notificationController = {
 
     res.status(200).json({ message: 'Notification deleted successfully.' });
   }),
+   getOrderNotifications: asyncWrapper(async (req, res, next) => {
+    const notifications = await Notification.find({ type: 'Order' })
+      .populate('user', 'names email')
+      .sort({ createdAt: -1 });
+
+    if (!notifications.length) {
+      return res.status(404).json({ message: 'No notifications found for orders' });
+    }
+
+    res.status(200).json({ notifications });
+  }),
+   getRestaurantAndMenuNotifications: asyncWrapper(async (req, res, next) => {
+    const notifications = await Notification.find({ type: { $in: ['Restaurant', 'Menu'] } })
+    .populate('user', 'names email')
+    .sort({ createdAt: -1 });
+    if (!notifications.length) {
+      return res.status(404).json({ message: 'No notifications found for restaurants' });
+    }
+
+    res.status(200).json({ notifications });
+  }),
 
  getNotificationsByUser: asyncWrapper(async (req, res, next) => {
   const { id } = req.params;
@@ -82,6 +86,6 @@ const notificationController = {
 };
 
 module.exports = {
-  sendNotification,
+  createNotification,
   notificationController
 };

@@ -1,6 +1,7 @@
 const asyncWrapper = require('../Middleware/async');
 const Order = require('../Models/orderModel');
 const NotFound = require('../Error/NotFound');
+const {createNotification}=require('../Controllers/notificationController');
 const BadRequest = require('../Error/BadRequest');
 
 const orderController = {
@@ -25,7 +26,16 @@ const orderController = {
     }
     res.status(200).json({ order });
   }),
-
+getOrdersByRestaurantId: asyncWrapper(async (req, res, next) => {
+  const { restaurantId } = req.params;
+  const orders = await Order.find({ restaurant: restaurantId })
+    .populate('user', 'firstName lastName email')
+    .populate('items.menuItem', 'name price');
+  if (!orders.length) {
+    return res.status(404).json({ message: 'No orders found for this restaurant' });
+  }
+  res.status(200).json({ orders });
+}),
   // Get orders by user ID
   getOrdersByUserId: asyncWrapper(async (req, res, next) => {
     const { userId } = req.params;
@@ -61,7 +71,14 @@ const orderController = {
       paymentMethod,
       deliveryAddress,
     });
-
+    const order = await Order.findById(newOrder._id).populate('items.menuItem');
+    const itemNames = order.items.map(item => item.menuItem.name).join(', ');
+  // --- Create a notification for the owner ---
+    await createNotification({
+      user: user, // The ID of the user to notify
+      message: `New Order, "${itemNames}" has been made.`,
+      type: 'Order', // As defined in your Notification schema
+    });
     res.status(201).json({ message: 'Order created successfully', order: newOrder });
   }),
 

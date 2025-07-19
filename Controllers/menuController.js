@@ -1,13 +1,16 @@
 const asyncWrapper = require('../Middleware/async');
 const MenuItem = require('../Models/menu');
 const NotFound = require('../Error/NotFound');
+const {createNotification}=require('../Controllers/notificationController');
 const BadRequest = require('../Error/BadRequest');
-const cloudinary =require('cloudinary');
+const cloudinary = require('cloudinary');
+
+// Configure Cloudinary
 cloudinary.v2.config({
     cloud_name: process.env.CLOUD_NAME,
     api_key: process.env.API_KEY,
     api_secret: process.env.API_SECRET
-  });
+});
 
 const menuItemController = {
   // Get all menu items
@@ -51,48 +54,71 @@ const menuItemController = {
 
   // Create new menu item
   createMenuItem: asyncWrapper(async (req, res, next) => {
-    const { restaurant, name, description, price, image, category, isAvailable } = req.body;
+    const { restaurant, name, description, price, category, isAvailable } = req.body;
 
-    if (!restaurant || !name || !price || !image) {
-      return next(new BadRequest('Required fields: restaurant, name, price, image'));
+    if (!restaurant || !name || !price || !req.file) {
+      return next(new BadRequest('Required fields: restaurant, name, price, and an image file.'));
     }
 
-    if (!["Appetizer", "Main Course", "Dessert", "Drinks"].includes(category)) {
+    if (category && !["Appetizer", "Main Course", "Dessert", "Drinks"].includes(category)) {
       return next(new BadRequest('Invalid category'));
     }
-const images = `IMAGE_${Date.now()}`;
-try{
-   const ImageCloudinary = await cloudinary.v2.uploader.upload(req.file.path, {
-              folder: 'Bistrou-Pulse',
-              public_id: images
-            });
- const newMenuItem = await MenuItem.create({
-      restaurant,
-      name,
-      description,
-      price,
-      image:ImageCloudinary.secure_url,
-      category,
-      isAvailable,
-    });
 
-    res.status(201).json({ message: 'Menu item created successfully', menuItem: newMenuItem });
-}
-     catch (err) {
-          console.error('Error uploading image to Cloudinary:', err);
-          return next(new BadRequest('Error uploading image to Cloudinary.'));
-        }
+    const images = `IMAGE_${Date.now()}`;
+    try {
+      const ImageCloudinary = await cloudinary.v2.uploader.upload(req.file.path, {
+        folder: 'Bistrou-Pulse',
+        public_id: images
+      });
+      const newMenuItem = await MenuItem.create({
+        restaurant,
+        name,
+        description,
+        price,
+        image: ImageCloudinary.secure_url,
+        category,
+        isAvailable,
+      });
+  // --- Create a notification for the owner ---
+    await createNotification({
+      user: restaurant, // The ID of the user to notify
+      message: `New Menu, "${name}", has been established.`,
+      type: 'Menu', // As defined in your Notification schema
+    });
+      res.status(201).json({ message: 'Menu item created successfully', menuItem: newMenuItem });
+    } catch (err) {
+      console.error('Error uploading image to Cloudinary:', err);
+      return next(new BadRequest('Error uploading image to Cloudinary.'));
+    }
   }),
 
-  // Update menu item by ID
+  // Update menu item by ID (with image update handling)
   updateMenuItem: asyncWrapper(async (req, res, next) => {
     const { id } = req.params;
+    const updateData = { ...req.body };
 
-    if (req.body.category && !["Appetizer", "Main Course", "Dessert", "Drinks"].includes(req.body.category)) {
+    if (updateData.category && !["Appetizer", "Main Course", "Dessert", "Drinks"].includes(updateData.category)) {
       return next(new BadRequest('Invalid category'));
     }
 
-    const updatedMenuItem = await MenuItem.findByIdAndUpdate(id, req.body, { new: true });
+    // Handle image update if a new file is provided
+    if (req.file) {
+      try {
+        const images = `IMAGE_${Date.now()}`;
+        const ImageCloudinary = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: 'Bistrou-Pulse',
+          public_id: images
+        });
+        updateData.image = ImageCloudinary.secure_url;
+        // Note: For a more robust solution, you might want to delete the old image from Cloudinary.
+      } catch (err) {
+        console.error('Error uploading new image to Cloudinary:', err);
+        return next(new BadRequest('Error uploading new image.'));
+      }
+    }
+
+    const updatedMenuItem = await MenuItem.findByIdAndUpdate(id, updateData, { new: true });
+
     if (!updatedMenuItem) {
       return next(new NotFound('Menu item not found'));
     }
@@ -107,6 +133,7 @@ try{
     if (!deletedMenuItem) {
       return next(new NotFound('Menu item not found'));
     }
+    // Note: You should also delete the item's image from Cloudinary here.
     res.status(200).json({ message: 'Menu item deleted successfully' });
   }),
 
