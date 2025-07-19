@@ -2,8 +2,13 @@ const asyncWrapper = require('../Middleware/async');
 const Restaurant = require('../Models/restaurants');
 const Owner = require('../Models/owners');
 const NotFound = require('../Error/NotFound');
+const cloudinary =require('cloudinary');
 const BadRequest = require('../Error/BadRequest');
-
+cloudinary.v2.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.API_KEY,
+    api_secret: process.env.API_SECRET
+  });
 const restaurantController = {
   // Get all restaurants
   getAllRestaurants: asyncWrapper(async (req, res, next) => {
@@ -52,7 +57,12 @@ const restaurantController = {
     if (!foundOwner) {
       return next(new NotFound('Owner not found'));
     }
-
+     const images = `IMAGE_${Date.now()}`;
+     try{
+       const ImageCloudinary = await cloudinary.v2.uploader.upload(req.file.path, {
+            folder: 'Bistrou-Pulse',
+            public_id: images
+          });
     const newRestaurant = await Restaurant.create({
       owner,
       name,
@@ -60,7 +70,7 @@ const restaurantController = {
       address,
       phone,
       email,
-      image,
+      image:ImageCloudinary.secure_url,
       openingHours,
       categories,
       menu,
@@ -71,6 +81,12 @@ const restaurantController = {
     await foundOwner.save();
 
     res.status(201).json({ message: 'Restaurant created successfully', restaurant: newRestaurant });
+     }
+     catch (err) {
+          console.error('Error uploading image to Cloudinary:', err);
+          return next(new BadRequest('Error uploading image to Cloudinary.'));
+        }
+
   }),
 
   // Update a restaurant

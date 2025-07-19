@@ -2,7 +2,8 @@ const express = require('express');
 const menuItemController = require('../Controllers/menuController');
 const menuRouter = express.Router();
 const auth = require('../Middleware/authentication');
-
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
 // Get all menu items
 menuRouter.get('/',auth.AuthJWT, menuItemController.getAllMenuItems);
 
@@ -16,7 +17,7 @@ menuRouter.get('/restaurant/:restaurantId',auth.AuthJWT, menuItemController.getM
 menuRouter.get('/category/:category',auth.AuthJWT, menuItemController.getMenuItemsByCategory);
 
 // Create new menu item
-menuRouter.post('/',auth.ownerJWT, menuItemController.createMenuItem);
+menuRouter.post('/',auth.ownerJWT, upload.single('image'), menuItemController.createMenuItem);
 
 // Update menu item by ID
 menuRouter.put('/:id',auth.ownerJWT, menuItemController.updateMenuItem);
