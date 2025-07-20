@@ -1,6 +1,7 @@
 const asyncWrapper = require('../Middleware/async');
 const Restaurant = require('../Models/restaurants');
 const Owner = require('../Models/owners');
+const User = require('../Models/user');
 const {createNotification}=require('../Controllers/notificationController');
 const NotFound = require('../Error/NotFound');
 const cloudinary =require('cloudinary');
@@ -61,7 +62,7 @@ const restaurantController = {
   }
 
   // Find the owner to associate the restaurant with
-  const foundOwner = await User.findById(owner); // Assuming Owner is part of your User model
+  const foundOwner = await Owner.findById(owner); // Assuming Owner is part of your User model
   if (!foundOwner) {
     return next(new NotFound('Owner not found'));
   }

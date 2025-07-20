@@ -34,6 +34,29 @@ const createNotification = async ({ user, message, type }) => {
   }
 };
 
+const createNotifications = async ({ user, message, type }) => {
+  if ( !message) {
+    console.warn('Notification skipped:  message is missing.');
+    return;
+  }
+
+  try {
+    // Ensure the user exists before creating a notification
+   
+    const newNotification = new Notification({
+     
+      message,
+      type,
+    });
+
+    await newNotification.save();
+    return newNotification; // Return the created notification
+  } catch (error) {
+    console.error('Failed to create notification:', error);
+    // Decide if you want to throw the error or just log it
+    // For non-critical notifications, just logging is often sufficient
+  }
+};
 
 
 
@@ -87,5 +110,6 @@ const notificationController = {
 
 module.exports = {
   createNotification,
+  createNotifications,
   notificationController
 };

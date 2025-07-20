@@ -48,7 +48,7 @@ createOwner: asyncWrapper(async (req, res, next) => {
   const { userId, businessName,plainTextPassword, restaurants } = req.body;
 
   // 1. Validate that you have the necessary ID
-  if (!userId || !plainTextPassword) {
+  if (!userId ) {
     return next(new BadRequest('userId is required'));
   }
 

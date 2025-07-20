@@ -1,7 +1,7 @@
 const asyncWrapper = require('../Middleware/async');
 const MenuItem = require('../Models/menu');
 const NotFound = require('../Error/NotFound');
-const {createNotification}=require('../Controllers/notificationController');
+const {createNotifications}=require('../Controllers/notificationController');
 const BadRequest = require('../Error/BadRequest');
 const cloudinary = require('cloudinary');
 
@@ -80,8 +80,8 @@ const menuItemController = {
         isAvailable,
       });
   // --- Create a notification for the owner ---
-    await createNotification({
-      user: restaurant, // The ID of the user to notify
+    await createNotifications({
+       // The ID of the user to notify
       message: `New Menu, "${name}", has been established.`,
       type: 'Menu', // As defined in your Notification schema
     });

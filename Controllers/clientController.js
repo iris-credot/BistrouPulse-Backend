@@ -34,33 +34,40 @@ const clientController = {
   }),
 
   // ✅ Create a new client (after user signs up)
-  createClient: asyncWrapper(async (req, res, next) => {
+// In your client controller file
+
+createClient: asyncWrapper(async (req, res, next) => {
+    // Destructure the user object and favoriteCuisines from the body
     const { user, favoriteCuisines } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(user)) {
-      return next(new BadRequest('Invalid user ID'));
+    // --- START: THE FIX ---
+
+    // 1. Extract the user's ID. This handles cases where `user` is an object or just a string ID.
+    const userId = user._id || user; 
+
+    // 2. Validate the extracted ID.
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return next(new BadRequest('Invalid user ID format'));
     }
 
-    const existingUser = await userModel.findById(user);
+    // --- END: THE FIX ---
+
+    // Now, continue your logic using the clean `userId`
+    const existingUser = await userModel.findById(userId);
     if (!existingUser) {
       return next(new NotFound('User not found'));
     }
 
-    const existingClient = await clientModel.findOne({ user });
+    // Use `userId` to check for an existing client profile
+    const existingClient = await clientModel.findOne({ user: userId });
     if (existingClient) {
       return next(new BadRequest('Client profile already exists for this user'));
     }
 
     const client = await clientModel.create({
-      user,
+      user: userId, // Pass ONLY the ID here
       favoriteCuisines,
     });
-
-    // Optionally update user role
-    if (existingUser.role !== 'client') {
-      existingUser.role = 'client';
-      await existingUser.save();
-    }
 
     res.status(201).json({ client });
   }),
