@@ -160,37 +160,45 @@ const userController ={
       res.status(200).json({ user })
     }),
 
-    UpdatePassword :asyncWrapper(async (req, res,next) => {
-      const { currentPassword, newPassword,confirm } = req.body;
-      const userId = req.userId; // Assuming the user ID is retrieved from the authenticated user
-  
-      
-          // Find the user by ID
-          const user = await userModel.findById(userId);
-          if (!user) {
-            return next(new Notfound(`User not found`));
-          }
-  
-          // Check if the current password matches the password stored in the database
-          const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
-          if (!isPasswordValid) {
-              console.log('Incorrect current password provided');
-              return res.status(400).json({ error: 'Incorrect current password' });
-          }
-    // Check if newPassword and confirm are equal
-    if (newPassword !== confirm) {
-      return res.status(400).json({ error: 'New password and confirm password do not match' });
-  }
-          user.password=newPassword;
-  
-          // Save the updated user object to the database
-          await user.save();
-  
-          console.log('Password updated successfully');
-          return res.json({ success: true, message: 'Password updated successfully' });
-      
-  }),
-    
+ // ... other code in userController.js
+
+// THIS IS THE CORRECTED FUNCTION
+updateUser: asyncWrapper(async (req, res, next) => {
+    const { id } = req.params;
+    const updateData = { ...req.body };
+
+    // 1. Check if a new file was uploaded via multer.
+    if (req.file) {
+      try {
+        // 2. If yes, upload this new file to Cloudinary.
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: 'Bistrou-Pulse', // Or your desired folder
+          public_id: `PROFILE_${id}_${Date.now()}` // A unique public_id
+        });
+
+        // 3. IMPORTANT: Add the secure public URL from Cloudinary to our update data.
+        updateData.image = result.secure_url;
+
+      } catch (err) {
+        console.error('Error uploading image to Cloudinary during update:', err);
+        return next(new Badrequest('Error uploading new profile image.'));
+      }
+    }
+
+    // 4. Find the user and update them with all the data 
+    //    (text fields and potentially the new Cloudinary image URL).
+    const updatedUser = await userModel.findByIdAndUpdate(id, updateData, {
+      new: true, // Return the modified document
+      runValidators: true // Run schema validators
+    });
+
+    if (!updatedUser) {
+      return next(new Notfound(`User not found`));
+    }
+
+    // 5. Send the fully updated user object back to the frontend.
+    res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+}),
   updateUser: asyncWrapper(async (req, res, next) => {
     const { id } = req.params;
     const updateData = { ...req.body };
