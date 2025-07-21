@@ -10,7 +10,8 @@ const {
 router.get('/getall', auth.adminJWT,notificationController.getAllNotifications);
 router.get('/get/:id',auth.AuthJWT, notificationController.getNotificationsByUser);
 router.get('/getByOrder',auth.AuthJWT, notificationController.getOrderNotifications);
-router.get('/getByRestMenu',auth.AuthJWT, notificationController.getNotificationsByUser);
+router.get('/getByRest',auth.AuthJWT, notificationController.getRestaurantNot);
+router.get('/getByMenu',auth.AuthJWT, notificationController.getMenuNot);
 router.delete('/delete/:id',auth.AuthJWT, notificationController.deleteNotification);
 
 
