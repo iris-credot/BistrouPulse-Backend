@@ -10,7 +10,7 @@ menuRouter.get('/:id',auth.AuthJWT, menuItemController.getMenuItemById);
 menuRouter.get('/restaurant/:restaurantId',auth.AuthJWT, menuItemController.getMenuItemsByRestaurant);
 menuRouter.get('/category/:category',auth.AuthJWT, menuItemController.getMenuItemsByCategory);
 menuRouter.post('/',auth.BothJWT, upload.single('image'), menuItemController.createMenuItem);
-menuRouter.put('/:id',auth.ownerJWT, menuItemController.updateMenuItem);
+menuRouter.put('/:id',auth.ownerJWT,upload.single('image'), menuItemController.updateMenuItem);
 menuRouter.delete('/:id',auth.ownerJWT, menuItemController.deleteMenuItem);
 menuRouter.patch('/:id/toggle-availability',auth.AuthJWT, menuItemController.toggleAvailability);
 

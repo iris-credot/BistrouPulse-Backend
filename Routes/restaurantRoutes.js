@@ -10,7 +10,7 @@ restaurantRouter .get('/',auth.AuthJWT, restaurantController.getAllRestaurants);
 restaurantRouter .get('/:id',auth.AuthJWT, restaurantController.getRestaurantById);
 restaurantRouter .get('/owner/:ownerId', auth.adminJWT,restaurantController.getRestaurantsByOwner);
 restaurantRouter .post('/', auth.BothJWT, upload.single('image'),restaurantController.createRestaurant);
-restaurantRouter .put('/:id', auth.BothJWT, restaurantController.updateRestaurant);
+restaurantRouter .put('/:id', auth.BothJWT,upload.single('image'), restaurantController.updateRestaurant);
 restaurantRouter .delete('/:id', auth.BothJWT, restaurantController.deleteRestaurant);
 restaurantRouter .patch('/:id/toggle-status', auth.AuthJWT, restaurantController.toggleRestaurantStatus);
 

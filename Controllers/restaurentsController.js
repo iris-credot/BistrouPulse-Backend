@@ -119,10 +119,24 @@ const restaurantController = {
 }),
 
   // Update a restaurant
-  updateRestaurant: asyncWrapper(async (req, res, next) => {
+updateRestaurant: asyncWrapper(async (req, res, next) => {
     const { id } = req.params;
-    const updatedRestaurant = await Restaurant.findByIdAndUpdate(id, req.body, {
+
+    // 1. Get the text data from req.body
+    const updateData = { ...req.body };
+
+    // 2. Check if a new file was uploaded by multer
+    if (req.file) {
+      // req.file.path will be something like 'uploads/your-random-file-name'
+      // You need to store this path in the 'image' field of your database.
+      // IMPORTANT: This assumes your server can publicly serve files from the 'uploads' folder.
+      updateData.image = req.file.path;
+    }
+
+    // 3. Perform the update with the combined data
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(id, updateData, {
       new: true,
+      runValidators: true // Good practice to run schema validations on update
     }).populate('owner').populate('menu');
 
     if (!updatedRestaurant) {
@@ -130,7 +144,7 @@ const restaurantController = {
     }
 
     res.status(200).json({ message: 'Restaurant updated successfully', restaurant: updatedRestaurant });
-  }),
+}),
 
   // Delete a restaurant
   deleteRestaurant: asyncWrapper(async (req, res, next) => {

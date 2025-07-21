@@ -191,16 +191,33 @@ const userController ={
       
   }),
     
-    updateUser: asyncWrapper(async (req, res,next) => {
-      const { id } = req.params;
-        const updatedUser = await userModel.findByIdAndUpdate(id, req.body, {
-          new: true,
-        });
-        if (!updatedUser) {
-          return next(new Notfound(`User not found`));
-        }
-        res.json(updatedUser);
-    }),
+  updateUser: asyncWrapper(async (req, res, next) => {
+    const { id } = req.params;
+
+    // 1. Start with the text fields from the request body.
+    const updateData = { ...req.body };
+
+    // 2. Check if Multer has processed a file upload.
+    //    If req.file exists, a new image was uploaded.
+    if (req.file) {
+      // Add the path of the newly uploaded file to our update data.
+      // The field name 'image' must match your userModel schema.
+      updateData.image = req.file.path;
+    }
+
+    // 3. Find the user by ID and update them with the combined data.
+    const updatedUser = await userModel.findByIdAndUpdate(id, updateData, {
+      new: true, // Return the updated document
+      runValidators: true // Ensure the update follows your schema rules
+    });
+
+    if (!updatedUser) {
+      return next(new Notfound(`User not found`));
+    }
+
+    // 4. Send the completely updated user object back as the response.
+    res.status(200).json({ message: 'User updated successfully', user: updatedUser });
+}),
 
  ForgotPassword : asyncWrapper(async (req, res, next) => {
       const foundUser = await userModel.findOne({ email: req.body.email });
