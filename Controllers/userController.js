@@ -199,38 +199,7 @@ updateUser: asyncWrapper(async (req, res, next) => {
     // 5. Send the fully updated user object back to the frontend.
     res.status(200).json({ message: 'User updated successfully', user: updatedUser });
 }),
-  updateUser: asyncWrapper(async (req, res, next) => {
-    const { id } = req.params;
-    const updateData = { ...req.body };
-
-    // 1. Check if a new file was uploaded.
-    if (req.file) {
-      try {
-        // 2. If yes, upload it to Cloudinary.
-        const result = await cloudinary.v2.uploader.upload(req.file.path, {
-          folder: 'Bistrou-Pulse',
-          public_id: `PROFILE_${id}_${Date.now()}`
-        });
-        // 3. Add the secure public URL from Cloudinary to our update data.
-        updateData.image = result.secure_url;
-      } catch (err) {
-        console.error('Error uploading image to Cloudinary during update:', err);
-        return next(new Badrequest('Error uploading new profile image.'));
-      }
-    }
-
-    // 4. Find the user and update them with all the data (text fields + new image URL if applicable).
-    const updatedUser = await userModel.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true
-    });
-
-    if (!updatedUser) {
-      return next(new Notfound(`User not found`));
-    }
-
-    res.status(200).json({ message: 'User updated successfully', user: updatedUser });
-  }),
+ 
 
  ForgotPassword : asyncWrapper(async (req, res, next) => {
       const foundUser = await userModel.findOne({ email: req.body.email });
@@ -285,6 +254,32 @@ ResetPassword: asyncWrapper(async (req, res, next) => {
   await user.save();
 
   return res.status(200).json({ message: "Password reset successfully" });
+}),
+updatePassword : asyncWrapper(async (req, res, next) => {
+  // Assuming you have middleware that authenticates the user and attaches user info to req.user
+  const { userId } = req.user; // or req.userId, depending on your auth middleware
+  const { currentPassword, newPassword } = req.body;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: "Please provide both current and new passwords." });
+  }
+
+  const user = await userModel.findById(userId);
+  if (!user) {
+    return res.status(404).json({ message: "User not found." });
+  }
+
+  // Check if the current password is correct
+  const isMatch = await bcrypt.compare(currentPassword, user.password);
+  if (!isMatch) {
+    return res.status(401).json({ message: "Incorrect current password." });
+  }
+
+  // Set and save the new password
+  user.password = newPassword;
+  await user.save();
+
+  res.status(200).json({ message: "Password updated successfully." });
 })
 }
 module.exports = userController
