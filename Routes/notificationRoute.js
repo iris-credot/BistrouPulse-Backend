@@ -2,9 +2,9 @@
 const express = require('express');
 const router = express.Router();
 const auth = require('../Middleware/authentication');
-const {
+const 
     notificationController
-} = require('../Controllers/notificationController');
+ = require('../Controllers/notificationController');
 
 
 router.get('/getall', auth.adminJWT,notificationController.getAllNotifications);
