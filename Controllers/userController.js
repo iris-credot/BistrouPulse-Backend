@@ -193,31 +193,36 @@ const userController ={
     
   updateUser: asyncWrapper(async (req, res, next) => {
     const { id } = req.params;
-
-    // 1. Start with the text fields from the request body.
     const updateData = { ...req.body };
 
-    // 2. Check if Multer has processed a file upload.
-    //    If req.file exists, a new image was uploaded.
+    // 1. Check if a new file was uploaded.
     if (req.file) {
-      // Add the path of the newly uploaded file to our update data.
-      // The field name 'image' must match your userModel schema.
-      updateData.image = req.file.path;
+      try {
+        // 2. If yes, upload it to Cloudinary.
+        const result = await cloudinary.v2.uploader.upload(req.file.path, {
+          folder: 'Bistrou-Pulse',
+          public_id: `PROFILE_${id}_${Date.now()}`
+        });
+        // 3. Add the secure public URL from Cloudinary to our update data.
+        updateData.image = result.secure_url;
+      } catch (err) {
+        console.error('Error uploading image to Cloudinary during update:', err);
+        return next(new Badrequest('Error uploading new profile image.'));
+      }
     }
 
-    // 3. Find the user by ID and update them with the combined data.
+    // 4. Find the user and update them with all the data (text fields + new image URL if applicable).
     const updatedUser = await userModel.findByIdAndUpdate(id, updateData, {
-      new: true, // Return the updated document
-      runValidators: true // Ensure the update follows your schema rules
+      new: true,
+      runValidators: true
     });
 
     if (!updatedUser) {
       return next(new Notfound(`User not found`));
     }
 
-    // 4. Send the completely updated user object back as the response.
     res.status(200).json({ message: 'User updated successfully', user: updatedUser });
-}),
+  }),
 
  ForgotPassword : asyncWrapper(async (req, res, next) => {
       const foundUser = await userModel.findOne({ email: req.body.email });
