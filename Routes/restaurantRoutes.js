@@ -6,7 +6,7 @@ const upload = multer({ dest: 'uploads/' });
 const restaurantRouter = express.Router();
 
 
-restaurantRouter .get('/',auth.AuthJWT, restaurantController.getAllRestaurants);
+restaurantRouter .get('/', restaurantController.getAllRestaurants);
 restaurantRouter .get('/:id',auth.AuthJWT, restaurantController.getRestaurantById);
 restaurantRouter .get('/owner/:ownerId', auth.adminJWT,restaurantController.getRestaurantsByOwner);
 restaurantRouter .post('/', auth.BothJWT, upload.single('image'),restaurantController.createRestaurant);
