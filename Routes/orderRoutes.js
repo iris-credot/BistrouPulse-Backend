@@ -7,6 +7,7 @@ const orderRouter = express.Router();
 // Get all orders
 orderRouter.get('/',auth.ownerJWT, orderController.getAllOrders);
 orderRouter.get('/:id',auth.AuthJWT, orderController.getOrderById);
+orderRouter.get('/rest/:id',auth.ownerJWT, orderController.getOrdersByRestaurantId);
 orderRouter.get('/user/:userId', auth.AuthJWT,orderController.getOrdersByUserId);
 orderRouter.post('/', auth.AuthJWT,orderController.createOrder);
 orderRouter.put('/:id',auth.AuthJWT, orderController.updateOrder);

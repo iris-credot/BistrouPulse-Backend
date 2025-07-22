@@ -81,7 +81,16 @@ getOrdersByRestaurantId: asyncWrapper(async (req, res, next) => {
     });
     res.status(201).json({ message: 'Order created successfully', order: newOrder });
   }),
-
+getOrdersByRestaurantId: asyncWrapper(async (req, res, next) => {
+  const { restaurantId } = req.params;
+  const orders = await Order.find({ restaurant: restaurantId })
+    .populate('user', 'firstName lastName email')
+    .populate('items.menuItem', 'name price');
+  if (!orders.length) {
+    return res.status(404).json({ message: 'No orders found for this restaurant' });
+  }
+  res.status(200).json({ orders });
+}),
   // Update order status, payment, delivery etc.
   updateOrder: asyncWrapper(async (req, res, next) => {
     const { id } = req.params;
