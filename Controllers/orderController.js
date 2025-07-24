@@ -126,7 +126,7 @@ getOrdersByRestaurantId: asyncWrapper(async (req, res, next) => {
     await createNotification({
       user: userIdForNotification,
       message: notificationMessage,
-      type: 'Order',
+      type: 'Notification',
     });
 
     // --- 5. Save and Respond ---
