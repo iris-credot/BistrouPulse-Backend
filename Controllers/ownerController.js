@@ -60,10 +60,8 @@ getCustomersForOwner : asyncWrapper(async (req, res, next) => {
     // Step 2: Find all orders that belong to the owner's restaurants
     const orders = await Order.find({
       'restaurant': { $in: owner.restaurants }
-    }).populate({
-      path: 'user',
-      select: 'name email' // Select which user fields you want to return
-    });
+    }).populate('user'// Select which user fields you want to return
+    );
 
     // Step 3: Create a unique list of customers from the orders
     const customersMap = new Map();
