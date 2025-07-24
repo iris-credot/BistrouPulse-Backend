@@ -107,6 +107,31 @@ createOwner: asyncWrapper(async (req, res, next) => {
     owner: newOwner
   });
 }),
+// Get all restaurants for a specific owner
+getOwnerRestaurants: asyncWrapper(async (req, res, next) => {
+  // 1. Get the owner's ID from the request parameters
+  const { id } = req.params;
+
+  // 2. Find the owner by their ID and populate the 'restaurants' field
+  // The .populate('restaurants') command tells Mongoose to fetch the full restaurant documents
+  const owner = await Owner.findById(id).populate('restaurants');
+
+  // 3. Check if the owner was found
+  if (!owner) {
+    return next(new NotFound('Owner not found'));
+  }
+
+  // 4. Check if the owner has any restaurants
+  if (!owner.restaurants || owner.restaurants.length === 0) {
+    return res.status(200).json({ 
+        message: 'This owner has not been assigned any restaurants yet.',
+        restaurants: [] 
+    });
+  }
+  
+  // 5. If restaurants are found, send them in the response
+  res.status(200).json({ restaurants: owner.restaurants });
+}),
 
 
   // Update owner profile
