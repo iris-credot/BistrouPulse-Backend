@@ -41,7 +41,51 @@ const ownerController = {
     }
     res.status(200).json({ owner });
   }),
+getCustomersForOwner : asyncWrapper(async (req, res, next) => {
+  try {
+    const { ownerId } = req.params;
 
+    // Step 1: Find the owner and get their list of restaurants
+    const owner = await Owner.findById(ownerId).select('restaurants').lean();
+
+    if (!owner) {
+      return res.status(404).json({ success: false, message: 'Owner not found' });
+    }
+
+    if (!owner.restaurants || owner.restaurants.length === 0) {
+      return res.status(200).json({ success: true, count: 0, customers: [] });
+    }
+
+    // Step 2: Find all orders that belong to the owner's restaurants
+    const orders = await Order.find({
+      'restaurant': { $in: owner.restaurants }
+    }).populate({
+      path: 'user',
+      select: 'name email' // Select which user fields you want to return
+    });
+
+    // Step 3: Create a unique list of customers from the orders
+    const customersMap = new Map();
+    orders.forEach(order => {
+      if (order.user) {
+        // Use the user's ID as the key to automatically handle duplicates
+        customersMap.set(order.user._id.toString(), order.user);
+      }
+    });
+
+    const uniqueCustomers = Array.from(customersMap.values());
+
+    res.status(200).json({
+      success: true,
+      count: uniqueCustomers.length,
+      customers: uniqueCustomers
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+}),
   // Create owner profile
 createOwner: asyncWrapper(async (req, res, next) => {
   // Only get the userId and owner-specific info from the request.

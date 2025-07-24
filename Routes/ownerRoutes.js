@@ -13,5 +13,6 @@ ownerRouter.get('/:id/restaurants', auth.ownerJWT, ownerController.getOwnerResta
 ownerRouter.post('/',auth.adminJWT, ownerController.createOwner);
 ownerRouter.put('/:id',auth.BothJWT, ownerController.updateOwner);
 ownerRouter.delete('/:id',auth.adminJWT, ownerController.deleteOwner);
+ownerRouter.get('/:ownerId/customers',auth.ownerJWT,ownerController.getCustomersForOwner);
 
 module.exports =ownerRouter;
