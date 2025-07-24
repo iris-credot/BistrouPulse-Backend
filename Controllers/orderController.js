@@ -81,6 +81,62 @@ getOrdersByRestaurantId: asyncWrapper(async (req, res, next) => {
     });
     res.status(201).json({ message: 'Order created successfully', order: newOrder });
   }),
+  updateOrderStatus: asyncWrapper(async (req, res, next) => {
+    const { id: orderId } = req.params;
+    const { status } = req.body;
+
+    // --- 1. Validation ---
+    if (!status) {
+      return next(new BadRequest('Status is required in the request body'));
+    }
+
+    const validStatuses = Order.schema.path('status').enumValues;
+    if (!validStatuses.includes(status)) {
+      return next(new BadRequest(
+        `Invalid status "${status}". Must be one of: ${validStatuses.join(', ')}`
+      ));
+    }
+
+    // --- 2. Find the Order ---
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return next(new NotFound(`No order found with id: ${orderId}`));
+    }
+    
+    // Optional: Prevent updating an order that is already completed or cancelled
+    if (order.status === 'Completed' || order.status === 'Cancelled') {
+        return next(new BadRequest(`Cannot update a ${order.status} order.`));
+    }
+
+
+    // --- 3. Apply Updates ---
+    order.status = status;
+
+    // Business Logic: If status is 'Completed', auto-update delivery fields
+    if (status === 'Completed') {
+      order.isDelivered = true;
+      order.deliveredAt = Date.now();
+    }
+
+    // --- 4. Send Notification (Corrected) ---
+    // The user ID is retrieved from the order document itself.
+    const userIdForNotification = order.user;
+    const notificationMessage = `Update: Your order #${order._id.toString().slice(-6)} is now "${status}".`;
+
+    await createNotification({
+      user: userIdForNotification,
+      message: notificationMessage,
+      type: 'Order',
+    });
+
+    // --- 5. Save and Respond ---
+    await order.save();
+
+    res.status(200).json({
+      message: 'Order status updated successfully',
+      order,
+    });
+  }),
 getOrdersByRestaurantId: asyncWrapper(async (req, res, next) => {
   const { id } = req.params;
   const orders = await Order.find({ restaurant: id })

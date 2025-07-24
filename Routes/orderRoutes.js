@@ -10,6 +10,7 @@ orderRouter.get('/:id',auth.AuthJWT, orderController.getOrderById);
 orderRouter.get('/rest/:id',auth.ownerJWT, orderController.getOrdersByRestaurantId);
 orderRouter.get('/user/:userId', auth.AuthJWT,orderController.getOrdersByUserId);
 orderRouter.post('/', auth.AuthJWT,orderController.createOrder);
+orderRouter.patch('/:id/status', auth.ownerJWT, orderController.updateOrderStatus);
 orderRouter.put('/:id',auth.AuthJWT, orderController.updateOrder);
 orderRouter.delete('/:id',auth.AuthJWT, orderController.deleteOrder);
 orderRouter.patch('/:id/pay',auth.ownerJWT, orderController.markAsPaid);
