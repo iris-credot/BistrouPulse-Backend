@@ -4,6 +4,7 @@ const Owner = require('../Models/owners');
 const sendEmail = require('../Middleware/sendMail');
 const User = require('../Models/user');
 const NotFound = require('../Error/NotFound');
+const Order = require('../Models/orderModel');
 const BadRequest = require('../Error/BadRequest');
 
 const ownerController = {
