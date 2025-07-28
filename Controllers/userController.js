@@ -216,10 +216,10 @@ updateUser: asyncWrapper(async (req, res, next) => {
           expirationDate: new Date(Date.now() + 5 * 60 * 1000),
       });
   
-      const link = `https://careconnect-frontend-33ni.onrender.com/auth/reset/${token}/${foundUser.id}`;
+      const link = `https://bistro-pulse-front-end-k4d8.vercel.app/resetPassword/${token}`;
       const emailBody = `Click on the link bellow to reset your password\n\n${link}`;
-  
-      await sendEmail(req.body.email, "Reset your password", emailBody);
+         
+      await sendEmail(req.body.email, "EduTrack-Reset password", emailBody);
       
   
       res.status(200).json({
@@ -229,8 +229,7 @@ updateUser: asyncWrapper(async (req, res, next) => {
       });
      
   }),
- 
-ResetPassword: asyncWrapper(async (req, res, next) => {
+    ResetPassword: asyncWrapper(async (req, res, next) => {
     const { newPassword, confirm } = req.body;
   const { token } = req.params;
 
@@ -241,7 +240,7 @@ ResetPassword: asyncWrapper(async (req, res, next) => {
     return res.status(400).json({ message: "Invalid or expired token" });
   }
 
-  const user = await userModel.findById(decoded.userId);
+  const user = await userModel.findById(decoded.id);
   if (!user) {
     return res.status(404).json({ message: "User not found" });
   }
