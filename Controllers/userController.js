@@ -219,7 +219,7 @@ updateUser: asyncWrapper(async (req, res, next) => {
       const link = `https://bistro-pulse-front-end-k4d8.vercel.app/resetPassword/${token}`;
       const emailBody = `Click on the link bellow to reset your password\n\n${link}`;
          
-      await sendEmail(req.body.email, "EduTrack-Reset password", emailBody);
+      await sendEmail(req.body.email, "Bistrou-Pulse-Reset password", emailBody);
       
   
       res.status(200).json({
