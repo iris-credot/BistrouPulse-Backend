@@ -92,7 +92,7 @@ const userController ={
   const emailBody = `
     Welcome to Bistrou-Pulse!
 
-    Your One Time Password (OTP) for account verification is: ${otp}
+    Your OTP for verification is: ${otp}
 
     This OTP is valid for 5 minutes.
 
