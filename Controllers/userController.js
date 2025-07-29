@@ -256,7 +256,7 @@ updateUser: asyncWrapper(async (req, res, next) => {
 }),
 updatePassword : asyncWrapper(async (req, res, next) => {
   // Assuming you have middleware that authenticates the user and attaches user info to req.user
-  const { userId } = req.user; // or req.userId, depending on your auth middleware
+  const { userId } = req; // or req.userId, depending on your auth middleware
   const { currentPassword, newPassword } = req.body;
 
   if (!currentPassword || !newPassword) {
